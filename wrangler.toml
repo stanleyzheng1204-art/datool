@@ -1,0 +1,17 @@
+name = "data-analysis-app"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "pnpm install && pnpm run build && npx @cloudflare/next-on-pages"
+cwd = "."
+
+[build.environment]
+NODE_VERSION = "20"
+
+[[build.processing.css]]
+bundle = true
+minify = true
+
+[[build.processing.js]]
+bundle = true
+minify = true

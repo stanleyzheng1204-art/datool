@@ -1,0 +1,43 @@
+{
+  "name": "data-analysis-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 5000",
+    "build": "next build",
+    "build:pages": "npx @cloudflare/next-on-pages",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "coze-coding-dev-sdk": "^0.7.3",
+    "d3-array": "^3.2.4",
+    "d3-scale": "^4.0.2",
+    "d3-time": "^3.1.0",
+    "d3-time-format": "^4.1.0",
+    "docx": "^9.5.1",
+    "html2canvas": "^1.4.1",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.562.0",
+    "next": "15.5.2",
+    "papaparse": "^5.5.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "^3.6.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/papaparse": "^5.5.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.10",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vercel": "47.0.4",
+    "wrangler": "^4.59.3"
+  }
+}

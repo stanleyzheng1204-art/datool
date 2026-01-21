@@ -1,0 +1,70 @@
+{
+  "v1": {
+    "version": "1.0.0",
+    "name": "基础版本",
+    "description": "基础数据分析功能，包含数据上传、筛选、聚合和画像分析",
+    "domain": "app.example.com",
+    "apiBase": "/api/v1",
+    "features": {
+      "enableAdvancedAnalysis": false,
+      "enableRealTimeSync": false,
+      "maxFileSize": 50,
+      "supportedFormats": ["csv", "json"]
+    },
+    "theme": {
+      "primaryColor": "#3B82F6",
+      "logo": "/logo-v1.png"
+    },
+    "deploy": {
+      "buildCommand": "pnpm run build",
+      "startCommand": "pnpm run start",
+      "env": "production"
+    }
+  },
+  "v2": {
+    "version": "2.0.0",
+    "name": "增强版本",
+    "description": "增强数据分析功能，增加正态分布检验、实时同步、多种数据格式支持",
+    "domain": "v2.example.com",
+    "apiBase": "/api/v2",
+    "features": {
+      "enableAdvancedAnalysis": true,
+      "enableRealTimeSync": true,
+      "maxFileSize": 100,
+      "supportedFormats": ["csv", "json", "xlsx", "xls"]
+    },
+    "theme": {
+      "primaryColor": "#10B981",
+      "logo": "/logo-v2.png"
+    },
+    "deploy": {
+      "buildCommand": "pnpm run build",
+      "startCommand": "pnpm run start",
+      "env": "production"
+    }
+  },
+  "v3": {
+    "version": "3.0.0",
+    "name": "高级版本",
+    "description": "高级数据分析功能，包含所有v2功能，增加AI智能分析、分布式处理",
+    "domain": "premium.example.com",
+    "apiBase": "/api/v3",
+    "features": {
+      "enableAdvancedAnalysis": true,
+      "enableRealTimeSync": true,
+      "enableAIAnalysis": true,
+      "enableDistributedProcessing": true,
+      "maxFileSize": 200,
+      "supportedFormats": ["csv", "json", "xlsx", "xls", "parquet", "orc"]
+    },
+    "theme": {
+      "primaryColor": "#8B5CF6",
+      "logo": "/logo-v3.png"
+    },
+    "deploy": {
+      "buildCommand": "pnpm run build",
+      "startCommand": "pnpm run start",
+      "env": "production"
+    }
+  }
+}

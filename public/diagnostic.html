@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部署诊断 - 数据分析应用</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .check-item:last-child {
+            border-bottom: none;
+        }
+        .check-icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .pass { color: #28a745; }
+        .fail { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .check-text {
+            flex: 1;
+        }
+        .check-detail {
+            color: #666;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box h3 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        .info-box p {
+            color: #856404;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        #logs {
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Cloudflare Pages 部署诊断</h1>
+        <p class="subtitle">最后更新：2025-01-21 16:40</p>
+
+        <div class="info-box">
+            <h3>⚠️ 如果页面显示 "hello word"</h3>
+            <p>这意味着 Cloudflare Pages 没有正确部署 Next.js 应用。请检查下面的诊断结果。</p>
+        </div>
+
+        <div class="section">
+            <h2>1. 基础检查</h2>
+            <div id="basic-checks"></div>
+        </div>
+
+        <div class="section">
+            <h2>2. 文件检查</h2>
+            <div id="file-checks"></div>
+        </div>
+
+        <div class="section">
+            <h2>3. API 检查</h2>
+            <div id="api-checks"></div>
+        </div>
+
+        <div class="section">
+            <h2>4. 诊断日志</h2>
+            <pre id="logs"></pre>
+        </div>
+
+        <div class="section">
+            <h2>5. 快速操作</h2>
+            <a href="/" class="btn">返回首页</a>
+            <a href="/version-demo" class="btn">访问版本演示页</a>
+            <a href="https://dash.cloudflare.com/" target="_blank" class="btn btn-danger">查看 Cloudflare Pages 控制台</a>
+        </div>
+    </div>
+
+    <script>
+        const logs = [];
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logs.push(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
+            updateLogs();
+        }
+
+        function updateLogs() {
+            document.getElementById('logs').textContent = logs.join('\n');
+        }
+
+        function addCheck(containerId, text, status, detail = '') {
+            const container = document.getElementById(containerId);
+            const icon = status === 'pass' ? '✅' : status === 'fail' ? '❌' : '⚠️';
+            const statusClass = status === 'pass' ? 'pass' : status === 'fail' ? 'fail' : 'warning';
+            
+            container.innerHTML += `
+                <div class="check-item">
+                    <span class="check-icon ${statusClass}">${icon}</span>
+                    <div class="check-text">
+                        <div>${text}</div>
+                        ${detail ? `<div class="check-detail">${detail}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function checkBasic() {
+            log('开始基础检查...');
+            
+            // 检查 JavaScript 是否加载
+            addCheck('basic-checks', 'JavaScript 已启用', 'pass');
+            log('JavaScript 已启用');
+
+            // 检查当前页面 URL
+            const url = window.location.href;
+            addCheck('basic-checks', '当前 URL', 'pass', url);
+            log(`当前 URL: ${url}`);
+
+            // 检查页面标题
+            const title = document.title;
+            if (title.includes('部署诊断')) {
+                addCheck('basic-checks', '诊断页面加载正常', 'pass');
+                log('诊断页面加载正常');
+            } else {
+                addCheck('basic-checks', '诊断页面加载异常', 'fail', `标题: ${title}`);
+                log('诊断页面加载异常', 'error');
+            }
+        }
+
+        async function checkFiles() {
+            log('开始文件检查...');
+
+            // 检查 VERSION.txt
+            try {
+                const versionRes = await fetch('/VERSION.txt');
+                if (versionRes.ok) {
+                    const versionText = await versionRes.text();
+                    addCheck('file-checks', 'VERSION.txt 存在', 'pass', versionText.split('\n')[0]);
+                    log(`VERSION.txt: ${versionText.split('\n')[0]}`);
+                } else {
+                    addCheck('file-checks', 'VERSION.txt 不存在', 'fail', `状态: ${versionRes.status}`);
+                    log('VERSION.txt 不存在', 'error');
+                }
+            } catch (e) {
+                addCheck('file-checks', 'VERSION.txt 访问失败', 'fail', e.message);
+                log(`VERSION.txt 访问失败: ${e.message}`, 'error');
+            }
+
+            // 检查 _next 目录
+            try {
+                const jsRes = await fetch('/_next/static/chunks/main-app.js');
+                if (jsRes.ok) {
+                    addCheck('file-checks', 'Next.js 静态文件存在', 'pass');
+                    log('Next.js 静态文件存在');
+                } else {
+                    addCheck('file-checks', 'Next.js 静态文件不存在', 'fail', `状态: ${jsRes.status}`);
+                    log('Next.js 静态文件不存在', 'error');
+                }
+            } catch (e) {
+                addCheck('file-checks', 'Next.js 静态文件访问失败', 'fail', e.message);
+                log(`Next.js 静态文件访问失败: ${e.message}`, 'error');
+            }
+
+            // 检查首页 HTML
+            try {
+                const htmlRes = await fetch('/');
+                const htmlText = await htmlRes.text();
+                if (htmlText.includes('数据分析应用')) {
+                    addCheck('file-checks', '首页包含正确内容', 'pass');
+                    log('首页包含正确内容');
+                } else if (htmlText.includes('hello word')) {
+                    addCheck('file-checks', '首页显示错误内容', 'fail', '检测到 "hello word"');
+                    log('首页显示错误内容: hello word', 'error');
+                } else {
+                    addCheck('file-checks', '首页内容异常', 'warning', '未检测到预期内容');
+                    log('首页内容异常', 'warning');
+                }
+            } catch (e) {
+                addCheck('file-checks', '首页访问失败', 'fail', e.message);
+                log(`首页访问失败: ${e.message}`, 'error');
+            }
+        }
+
+        async function checkAPI() {
+            log('开始 API 检查...');
+
+            // 检查 analyze API
+            try {
+                const apiRes = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: '{}'
+                });
+                if (apiRes.ok) {
+                    const apiData = await apiRes.json();
+                    addCheck('api-checks', '/api/analyze 可访问', 'pass', `状态: ${apiRes.status}`);
+                    log(`/api/analyze 响应: ${JSON.stringify(apiData)}`);
+                } else {
+                    addCheck('api-checks', '/api/analyze 返回错误', 'warning', `状态: ${apiRes.status}`);
+                    log(`/api/analyze 状态: ${apiRes.status}`, 'warning');
+                }
+            } catch (e) {
+                addCheck('api-checks', '/api/analyze 访问失败', 'fail', e.message);
+                log(`/api/analyze 访问失败: ${e.message}`, 'error');
+            }
+        }
+
+        async function runDiagnostics() {
+            log('=== 开始诊断 ===');
+            await checkBasic();
+            await checkFiles();
+            await checkAPI();
+            log('=== 诊断完成 ===');
+        }
+
+        runDiagnostics();
+    </script>
+</body>
+</html>
